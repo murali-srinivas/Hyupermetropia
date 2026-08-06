@@ -1,0 +1,553 @@
+<!DOCTYPE html>
+<html lang="te">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>హైపర్‌మెట్రోపియా అనుకరణ | Hypermetropia Simulation</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+Telugu:wght@400;500;600;700;800&family=Fraunces:opsz,wght@9..144,400;9..144,600;9..144,700&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --bg-deep:#0B1826;
+    --bg-panel:#132A3E;
+    --bg-panel-2:#1B3650;
+    --line:#2A4964;
+    --text-main:#F1ECE2;
+    --text-mute:#8FA9BF;
+    --gold:#F4B942;
+    --gold-dim:#8C7233;
+    --coral:#E8604C;
+    --coral-dim:#8C4239;
+    --teal:#4FC9A8;
+    --teal-dim:#337364;
+  }
+  *{box-sizing:border-box;}
+  body{
+    margin:0;
+    background:
+      radial-gradient(ellipse at 20% -10%, #16324A 0%, transparent 55%),
+      radial-gradient(ellipse at 100% 110%, #0F2438 0%, transparent 50%),
+      var(--bg-deep);
+    color:var(--text-main);
+    font-family:'Inter',sans-serif;
+    min-height:100vh;
+    padding:32px 20px 60px;
+  }
+  .wrap{max-width:1080px;margin:0 auto;}
+
+  header{margin-bottom:28px;}
+  .eyebrow{
+    font-family:'Inter',sans-serif;
+    font-size:12px;
+    letter-spacing:0.16em;
+    text-transform:uppercase;
+    color:var(--gold);
+    font-weight:600;
+    margin-bottom:10px;
+  }
+  h1{
+    font-family:'Noto Sans Telugu',sans-serif;
+    font-weight:800;
+    font-size:clamp(30px,4.4vw,46px);
+    line-height:1.15;
+    margin:0 0 6px;
+    color:var(--text-main);
+  }
+  .sub{
+    font-family:'Fraunces',serif;
+    font-style:italic;
+    font-weight:400;
+    font-size:19px;
+    color:var(--text-mute);
+    margin:0;
+  }
+
+  /* Tabs */
+  .tabs{
+    display:flex;
+    gap:8px;
+    margin:28px 0 18px;
+    flex-wrap:wrap;
+    border-bottom:1px solid var(--line);
+    padding-bottom:0;
+  }
+  .tab{
+    font-family:'Noto Sans Telugu',sans-serif;
+    background:transparent;
+    border:none;
+    color:var(--text-mute);
+    font-size:15.5px;
+    font-weight:600;
+    padding:12px 18px;
+    cursor:pointer;
+    border-bottom:3px solid transparent;
+    transition:color .2s ease, border-color .2s ease;
+    display:flex;
+    align-items:center;
+    gap:8px;
+  }
+  .tab .dot{width:8px;height:8px;border-radius:50%;background:var(--text-mute);flex:none;}
+  .tab.active{color:var(--text-main);}
+  .tab[data-mode="normal"].active{border-color:var(--gold);}
+  .tab[data-mode="normal"].active .dot{background:var(--gold);}
+  .tab[data-mode="defect"].active{border-color:var(--coral);}
+  .tab[data-mode="defect"].active .dot{background:var(--coral);}
+  .tab[data-mode="correct"].active{border-color:var(--teal);}
+  .tab[data-mode="correct"].active .dot{background:var(--teal);}
+  .tab:hover{color:var(--text-main);}
+
+  /* Layout */
+  .stage{
+    background:linear-gradient(180deg,var(--bg-panel) 0%, #0F2033 100%);
+    border:1px solid var(--line);
+    border-radius:18px;
+    padding:8px 8px 20px;
+    position:relative;
+    overflow:hidden;
+  }
+  .status-banner{
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+    gap:12px;
+    padding:14px 20px;
+    flex-wrap:wrap;
+  }
+  .status-left{display:flex;align-items:center;gap:10px;}
+  .status-badge{
+    font-family:'Inter',sans-serif;
+    font-size:12px;
+    font-weight:700;
+    letter-spacing:.06em;
+    text-transform:uppercase;
+    padding:5px 11px;
+    border-radius:99px;
+    border:1px solid currentColor;
+  }
+  .status-badge.sharp{color:var(--teal);}
+  .status-badge.blur{color:var(--coral);}
+  .status-text{
+    font-family:'Noto Sans Telugu',sans-serif;
+    font-size:15px;
+    color:var(--text-mute);
+  }
+  .status-text b{color:var(--text-main);font-weight:700;}
+
+  svg{display:block;width:100%;height:auto;}
+
+  .ray{fill:none;stroke:var(--gold);stroke-width:1.8;stroke-linecap:round;opacity:.92;}
+  .ray.dashed{stroke-dasharray:5 5;opacity:.55;}
+  .ray.corrected{stroke:var(--teal);}
+  .ray.blurred{stroke:var(--coral);}
+
+  .label{
+    font-family:'Inter',sans-serif;
+    font-size:12.5px;
+    fill:var(--text-mute);
+    letter-spacing:.02em;
+  }
+  .label-te{
+    font-family:'Noto Sans Telugu',sans-serif;
+    font-size:13px;
+    fill:var(--text-mute);
+    font-weight:500;
+  }
+
+  /* Slider */
+  .slider-row{
+    display:flex;
+    align-items:center;
+    gap:16px;
+    padding:6px 24px 8px;
+    flex-wrap:wrap;
+  }
+  .slider-tag{
+    font-family:'Noto Sans Telugu',sans-serif;
+    font-size:14px;
+    font-weight:600;
+    color:var(--text-mute);
+    white-space:nowrap;
+  }
+  input[type=range]{
+    flex:1;
+    min-width:180px;
+    -webkit-appearance:none;
+    height:4px;
+    background:linear-gradient(90deg, var(--gold-dim), var(--line));
+    border-radius:99px;
+    outline:none;
+  }
+  input[type=range]::-webkit-slider-thumb{
+    -webkit-appearance:none;
+    width:18px;height:18px;
+    border-radius:50%;
+    background:var(--gold);
+    border:3px solid var(--bg-deep);
+    box-shadow:0 0 0 1px var(--gold);
+    cursor:pointer;
+    margin-top:-7px;
+  }
+  input[type=range]::-webkit-slider-runnable-track{
+    height:4px;border-radius:99px;
+  }
+
+  /* Info panels */
+  .info-grid{
+    display:grid;
+    grid-template-columns:1.1fr .9fr;
+    gap:18px;
+    margin-top:22px;
+  }
+  @media (max-width:760px){ .info-grid{grid-template-columns:1fr;} }
+
+  .card{
+    background:var(--bg-panel);
+    border:1px solid var(--line);
+    border-radius:14px;
+    padding:20px 22px;
+  }
+  .card h2{
+    font-family:'Noto Sans Telugu',sans-serif;
+    font-size:18px;
+    margin:0 0 4px;
+    color:var(--text-main);
+    display:flex;
+    align-items:center;
+    gap:8px;
+  }
+  .card h2 .en{
+    font-family:'Fraunces',serif;
+    font-style:italic;
+    font-weight:400;
+    font-size:14px;
+    color:var(--text-mute);
+  }
+  .card p{
+    font-family:'Noto Sans Telugu',sans-serif;
+    font-size:14.5px;
+    line-height:1.75;
+    color:var(--text-mute);
+    margin:10px 0 0;
+  }
+  .card p.en-p{font-family:'Inter',sans-serif;font-size:13.5px;color:#6E8AA0;}
+
+  .causes-list{margin:12px 0 0;padding:0;list-style:none;}
+  .causes-list li{
+    font-family:'Noto Sans Telugu',sans-serif;
+    font-size:14.5px;
+    line-height:1.65;
+    color:var(--text-mute);
+    padding:10px 0 10px 30px;
+    position:relative;
+    border-top:1px solid var(--line);
+  }
+  .causes-list li:first-child{border-top:none;padding-top:2px;}
+  .causes-list li .num{
+    position:absolute;left:0;top:10px;
+    font-family:'Fraunces',serif;
+    font-size:15px;
+    color:var(--gold);
+    font-weight:700;
+  }
+  .causes-list li:first-child .num{top:2px;}
+  .causes-list li span.te{color:var(--text-main);font-weight:600;}
+  .causes-list li .en-line{
+    display:block;
+    font-family:'Inter',sans-serif;
+    font-size:12.5px;
+    color:#6E8AA0;
+    margin-top:3px;
+  }
+
+  .legend{display:flex;gap:18px;flex-wrap:wrap;padding:14px 24px 4px;}
+  .legend-item{display:flex;align-items:center;gap:7px;font-family:'Inter',sans-serif;font-size:12.5px;color:var(--text-mute);}
+  .legend-swatch{width:16px;height:3px;border-radius:2px;}
+
+  footer{
+    margin-top:26px;
+    text-align:center;
+    font-family:'Noto Sans Telugu',sans-serif;
+    font-size:12.5px;
+    color:#4E6982;
+  }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <header>
+    <div class="eyebrow">Eye Optics &middot; Class 10 Physics</div>
+    <h1>హైపర్‌మెట్రోపియా — దూరదృష్టి దోషం</h1>
+    <p class="sub">Hypermetropia (Far-sightedness): causes, the defect, and correction with a convex lens</p>
+  </header>
+
+  <div class="tabs">
+    <button class="tab active" data-mode="normal"><span class="dot"></span>సాధారణ కన్ను <span style="opacity:.6">&middot; Normal Eye</span></button>
+    <button class="tab" data-mode="defect"><span class="dot"></span>దోషం &middot; Defective</button>
+    <button class="tab" data-mode="correct"><span class="dot"></span>సవరణ &middot; Convex Lens Correction</button>
+  </div>
+
+  <div class="stage">
+    <div class="status-banner">
+      <div class="status-left">
+        <span class="status-badge sharp" id="statusBadge">SHARP FOCUS</span>
+        <span class="status-text" id="statusText">కాంతి కిరణాలు <b>రెటీనా మీద</b> సరిగ్గా కేంద్రీకృతమవుతున్నాయి.</span>
+      </div>
+    </div>
+
+    <svg id="eyeSvg" viewBox="0 0 960 420" xmlns="http://www.w3.org/2000/svg"></svg>
+
+    <div class="legend">
+      <div class="legend-item"><span class="legend-swatch" style="background:var(--gold)"></span>కాంతి కిరణం &middot; Light ray</div>
+      <div class="legend-item"><span class="legend-swatch" style="background:var(--coral)"></span>అస్పష్ట బిందువు &middot; Blur point on retina</div>
+      <div class="legend-item"><span class="legend-swatch" style="background:var(--gold);opacity:.5;border-top:1px dashed var(--gold)"></span>వాస్తవ కేంద్రీకరణ (వర్చువల్) &middot; True focus (virtual, behind retina)</div>
+      <div class="legend-item"><span class="legend-swatch" style="background:var(--teal)"></span>కుంభాకార కటకం &middot; Convex lens</div>
+    </div>
+
+    <div class="slider-row">
+      <span class="slider-tag">దగ్గర వస్తువు &middot; Near</span>
+      <input type="range" id="distSlider" min="0" max="100" value="0">
+      <span class="slider-tag">దూరపు వస్తువు &middot; Far</span>
+    </div>
+  </div>
+
+  <div class="info-grid">
+    <div class="card">
+      <h2 id="cardTitle">సాధారణ కన్ను ఎలా పనిచేస్తుంది? <span class="en">How a normal eye works</span></h2>
+      <p id="cardBody">కంటిపాప (కార్నియా) మరియు కటకం (లెన్స్) కలిసి వస్తువు నుండి వచ్చే కాంతిని వంచి, సరిగ్గా <b style="color:var(--text-main)">రెటీనా</b> మీద కేంద్రీకరిస్తాయి — దగ్గరైనా, దూరమైనా. దీనినే <b style="color:var(--text-main)">సర్దుబాటు (accommodation)</b> అంటారు.</p>
+      <p class="en-p" id="cardBodyEn">The cornea and eye-lens together bend light so it converges exactly on the retina, whether the object is near or far — this adjusting power is called accommodation.</p>
+    </div>
+    <div class="card">
+      <h2>కారణాలు <span class="en">Causes</span></h2>
+      <ul class="causes-list">
+        <li><span class="num">1</span><span class="te">కంటి గోళం (eyeball) సాధారణం కంటే చిన్నదిగా / తక్కువ పొడవుగా ఉండటం.</span>
+          <span class="en-line">The eyeball is shorter (axial length reduced) than normal.</span>
+        </li>
+        <li><span class="num">2</span><span class="te">కటకం లేదా కార్నియా వక్రత తగ్గి, కేంద్రీకరణ శక్తి (converging power) చాలకపోవడం.</span>
+          <span class="en-line">Reduced curvature of the lens/cornea lowers its converging power.</span>
+        </li>
+        <li><span class="num">3</span><span class="te">ఫలితంగా, దగ్గరి వస్తువు నుండి వచ్చే కిరణాలు రెటీనాకు చేరకముందే కలవలేక, రెటీనా వెనుక కేంద్రీకృతమవుతాయి.</span>
+          <span class="en-line">Rays from near objects converge behind the retina instead of on it.</span>
+        </li>
+      </ul>
+    </div>
+  </div>
+
+  <footer>Drag the slider to move the object nearer or farther — watch when the image sharpens and when it blurs.</footer>
+</div>
+
+<script>
+const NS = "http://www.w3.org/2000/svg";
+const svg = document.getElementById('eyeSvg');
+const slider = document.getElementById('distSlider');
+const tabs = document.querySelectorAll('.tab');
+
+const EYE_Y = 210;
+const CORNEA_X = 470;
+const EXT_LENS_X = 370;
+const NORMAL_RETINA_X = 700;
+const SHORT_RETINA_X = 640;
+const AP = [-45, 0, 45]; // aperture sample offsets (top, mid, bottom)
+const MAX_SHIFT = 85;
+
+let mode = 'normal';
+
+const content = {
+  normal: {
+    title: 'సాధారణ కన్ను ఎలా పనిచేస్తుంది? <span class="en">How a normal eye works</span>',
+    body: 'కంటిపాప (కార్నియా) మరియు కటకం (లెన్స్) కలిసి వస్తువు నుండి వచ్చే కాంతిని వంచి, సరిగ్గా <b style="color:var(--text-main)">రెటీనా</b> మీద కేంద్రీకరిస్తాయి — దగ్గరైనా, దూరమైనా. దీనినే <b style="color:var(--text-main)">సర్దుబాటు (accommodation)</b> అంటారు.',
+    bodyEn: 'The cornea and eye-lens together bend light so it converges exactly on the retina, whether the object is near or far — this adjusting power is called accommodation.'
+  },
+  defect: {
+    title: 'దోషం — హైపర్‌మెట్రోపియా <span class="en">The defect</span>',
+    body: 'కంటి గోళం చిన్నదిగా ఉండటం లేదా కటకం శక్తి తక్కువగా ఉండటం వల్ల, దగ్గరి వస్తువు నుండి వచ్చే కిరణాలు <b style="color:var(--coral)">రెటీనా వెనుక</b> కేంద్రీకృతమవుతాయి. దీనివల్ల దగ్గరి వస్తువులు అస్పష్టంగా కనిపిస్తాయి, కానీ దూరపు వస్తువులు స్పష్టంగానే కనిపిస్తాయి.',
+    bodyEn: 'Because the eyeball is too short or the lens power too weak, rays from near objects focus behind the retina — near vision is blurred while distant objects remain clear.'
+  },
+  correct: {
+    title: 'సవరణ — కుంభాకార కటకం <span class="en">Correction: convex lens</span>',
+    body: 'కంటి ముందు <b style="color:var(--teal)">కుంభాకార (converging) కటకం</b> ఉంచడం వల్ల, కాంతి కిరణాలు కంటిలోకి ప్రవేశించే ముందే కొంత ముందుగా కలుస్తాయి. దీనివల్ల కంటి తగ్గిన కేంద్రీకరణ శక్తి భర్తీ అయ్యి, చిత్రం సరిగ్గా రెటీనా మీద ఏర్పడుతుంది.',
+    bodyEn: 'Placing a convex (converging) lens in front of the eye pre-converges the rays before they enter the eye, compensating for the eye\'s reduced power so the image lands exactly on the retina.'
+  }
+};
+
+function retinaXFor(m){
+  return m === 'normal' ? NORMAL_RETINA_X : SHORT_RETINA_X;
+}
+
+function convergeXFor(m, val){
+  const nearness = 1 - val/100; // 1 = fully near, 0 = fully far
+  if(m === 'normal') return NORMAL_RETINA_X;
+  if(m === 'defect') return SHORT_RETINA_X + MAX_SHIFT * nearness;
+  if(m === 'correct') return SHORT_RETINA_X; // lens compensates fully
+}
+
+function el(tag, attrs){
+  const e = document.createElementNS(NS, tag);
+  for(const k in attrs) e.setAttribute(k, attrs[k]);
+  return e;
+}
+
+function draw(){
+  svg.innerHTML = '';
+  const val = +slider.value;
+  const retinaX = retinaXFor(mode);
+  const convergeX = convergeXFor(mode, val);
+  const objX = 340 - (val/100)*260; // val0 near(x=340) ... val100 far(x=80)
+  const useExtLens = mode === 'correct';
+  const rayClass = mode === 'correct' ? 'corrected' : '';
+  const sharp = Math.abs(convergeX - retinaX) < 3;
+
+  // ---- status banner ----
+  const badge = document.getElementById('statusBadge');
+  const text = document.getElementById('statusText');
+  if(sharp){
+    badge.className = 'status-badge sharp';
+    badge.textContent = 'SHARP FOCUS';
+    text.innerHTML = 'కాంతి కిరణాలు <b>రెటీనా మీద</b> సరిగ్గా కేంద్రీకృతమవుతున్నాయి.';
+  } else {
+    badge.className = 'status-badge blur';
+    badge.textContent = 'BLURRED';
+    text.innerHTML = 'కాంతి కిరణాలు <b>రెటీనా వెనుక</b> కేంద్రీకృతమవుతున్నాయి — దగ్గరి వస్తువు అస్పష్టంగా కనిపిస్తుంది.';
+  }
+
+  // ---- background gradient defs ----
+  const defs = el('defs',{});
+  const glow = el('radialGradient',{id:'glow',cx:'50%',cy:'50%',r:'50%'});
+  glow.appendChild(el('stop',{offset:'0%','stop-color':'#1B3650','stop-opacity':'1'}));
+  glow.appendChild(el('stop',{offset:'100%','stop-color':'#0F2033','stop-opacity':'0'}));
+  defs.appendChild(glow);
+  svg.appendChild(defs);
+  svg.appendChild(el('rect',{x:0,y:0,width:960,height:420,fill:'url(#glow)'}));
+
+  // ---- axis (dashed optical axis) ----
+  svg.appendChild(el('line',{x1:60,y1:EYE_Y,x2:900,y2:EYE_Y,stroke:'#26445F',['stroke-width']:1,['stroke-dasharray']:'3 6'}));
+
+  // ---- object (arrow) ----
+  const objTopY = EYE_Y - 70;
+  svg.appendChild(el('line',{x1:objX,y1:EYE_Y,x2:objX,y2:objTopY,stroke:'#D8CDBA',['stroke-width']:3}));
+  svg.appendChild(el('path',{d:`M ${objX-7} ${objTopY+12} L ${objX} ${objTopY} L ${objX+7} ${objTopY+12} Z`,fill:'#D8CDBA'}));
+  const objLabel = el('text',{x:objX, y:EYE_Y+26, class:'label-te', ['text-anchor']:'middle'});
+  objLabel.textContent = 'వస్తువు';
+  svg.appendChild(objLabel);
+  const objLabelEn = el('text',{x:objX, y:EYE_Y+42, class:'label', ['text-anchor']:'middle'});
+  objLabelEn.textContent = 'Object';
+  svg.appendChild(objLabelEn);
+
+  // ---- eyeball anatomy ----
+  const eyeRy = 95;
+  const eyeCx = (CORNEA_X + retinaX)/2;
+  const eyeRx = (retinaX - CORNEA_X)/2;
+  svg.appendChild(el('ellipse',{cx:eyeCx, cy:EYE_Y, rx:eyeRx, ry:eyeRy, fill:'#0F2436', stroke:'#345B7A', ['stroke-width']:2}));
+  // cornea bulge
+  svg.appendChild(el('path',{d:`M ${CORNEA_X} ${EYE_Y-eyeRy} A 40 ${eyeRy} 0 0 1 ${CORNEA_X} ${EYE_Y+eyeRy}`, fill:'none', stroke:'#5B87A8', ['stroke-width']:2.5}));
+  // internal lens (biconvex)
+  const lx = CORNEA_X + 38;
+  svg.appendChild(el('path',{d:`M ${lx-10} ${EYE_Y-38} Q ${lx+10} ${EYE_Y} ${lx-10} ${EYE_Y+38} Q ${lx-30} ${EYE_Y} ${lx-10} ${EYE_Y-38} Z`, fill:'#274863', stroke:'#5B87A8', ['stroke-width']:1.5}));
+  // retina wall (slightly curved)
+  svg.appendChild(el('path',{d:`M ${retinaX} ${EYE_Y-eyeRy} Q ${retinaX+10} ${EYE_Y} ${retinaX} ${EYE_Y+eyeRy}`, fill:'none', stroke: sharp ? 'var(--teal)' : 'var(--coral)', ['stroke-width']:3}));
+
+  const retLbl = el('text',{x:retinaX+14, y:EYE_Y-eyeRy-8, class:'label-te'});
+  retLbl.textContent='రెటీనా';
+  svg.appendChild(retLbl);
+  const retLblEn = el('text',{x:retinaX+14, y:EYE_Y-eyeRy+8, class:'label'});
+  retLblEn.textContent='Retina';
+  svg.appendChild(retLblEn);
+
+  const corLbl = el('text',{x:CORNEA_X-6, y:EYE_Y-eyeRy-8, class:'label-te', ['text-anchor']:'end'});
+  corLbl.textContent='కార్నియా / కటకం';
+  svg.appendChild(corLbl);
+  const corLblEn = el('text',{x:CORNEA_X-6, y:EYE_Y-eyeRy+8, class:'label', ['text-anchor']:'end'});
+  corLblEn.textContent='Cornea / lens';
+  svg.appendChild(corLblEn);
+
+  // ---- external convex lens (correction mode) ----
+  if(useExtLens){
+    const h = 62;
+    svg.appendChild(el('path',{
+      d:`M ${EXT_LENS_X-14} ${EYE_Y-h} Q ${EXT_LENS_X+16} ${EYE_Y} ${EXT_LENS_X-14} ${EYE_Y+h} Q ${EXT_LENS_X-44} ${EYE_Y} ${EXT_LENS_X-14} ${EYE_Y-h} Z`,
+      fill:'rgba(79,201,168,0.18)', stroke:'var(--teal)', ['stroke-width']:2.5
+    }));
+    const lensLbl = el('text',{x:EXT_LENS_X-14, y:EYE_Y-h-10, class:'label-te', ['text-anchor']:'middle'});
+    lensLbl.setAttribute('fill','var(--teal)');
+    lensLbl.textContent='కుంభాకార కటకం';
+    svg.appendChild(lensLbl);
+    const lensLblEn = el('text',{x:EXT_LENS_X-14, y:EYE_Y-h+8, class:'label', ['text-anchor']:'middle'});
+    lensLblEn.setAttribute('fill','var(--teal)');
+    lensLblEn.textContent='Convex lens (glasses)';
+    svg.appendChild(lensLblEn);
+  }
+
+  // ---- rays ----
+  const retinaYs = [];
+  AP.forEach((offset)=>{
+    let pts;
+    if(useExtLens){
+      const lensY = EYE_Y + offset;
+      const narrowed = offset * 0.45; // lens narrows the spread
+      const corneaY = EYE_Y + narrowed;
+      pts = [[objX, objTopY-6],[EXT_LENS_X-14, lensY],[CORNEA_X, corneaY]];
+    } else {
+      const corneaY = EYE_Y + offset;
+      pts = [[objX, objTopY-6],[CORNEA_X, corneaY]];
+    }
+    const lastPt = pts[pts.length-1];
+    // ray from last optical surface toward convergeX
+    const dx = convergeX - lastPt[0];
+    const dy = EYE_Y - lastPt[1];
+    const t = (retinaX - lastPt[0]) / dx;
+    const yAtRetina = lastPt[1] + dy * t;
+    retinaYs.push(yAtRetina);
+
+    // draw solid path up to retina
+    let d = `M ${pts[0][0]} ${pts[0][1]} `;
+    for(let i=1;i<pts.length;i++) d += `L ${pts[i][0]} ${pts[i][1]} `;
+    d += `L ${retinaX} ${yAtRetina}`;
+    const cls = sharp ? `ray ${rayClass}` : `ray ${rayClass}`;
+    svg.appendChild(el('path',{d, class:cls}));
+
+    // dashed continuation to true (virtual) convergence point if behind retina
+    if(!sharp && convergeX > retinaX + 1){
+      svg.appendChild(el('path',{d:`M ${retinaX} ${yAtRetina} L ${convergeX} ${EYE_Y}`, class:'ray dashed'}));
+    }
+  });
+
+  // ---- focus marker ----
+  if(sharp){
+    svg.appendChild(el('circle',{cx:retinaX, cy:EYE_Y, r:5, fill:'var(--teal)'}));
+    svg.appendChild(el('circle',{cx:retinaX, cy:EYE_Y, r:11, fill:'none', stroke:'var(--teal)', ['stroke-width']:1.5, opacity:0.5}));
+  } else {
+    const spread = Math.max(...retinaYs) - Math.min(...retinaYs);
+    const midY = (Math.max(...retinaYs)+Math.min(...retinaYs))/2;
+    svg.appendChild(el('ellipse',{cx:retinaX, cy:midY, rx:6, ry:Math.max(spread/2,8), fill:'rgba(232,96,76,0.35)', stroke:'var(--coral)', ['stroke-width']:1.5}));
+    svg.appendChild(el('circle',{cx:convergeX, cy:EYE_Y, r:4, fill:'none', stroke:'var(--gold)', ['stroke-width']:1.5, ['stroke-dasharray']:'2 3'}));
+    const vfLbl = el('text',{x:convergeX+10, y:EYE_Y-14, class:'label'});
+    vfLbl.setAttribute('fill','var(--gold)');
+    vfLbl.textContent = convergeX > retinaX ? '← నిజ కేంద్రీకరణ (వెనుక)' : 'true focus';
+    svg.appendChild(vfLbl);
+  }
+
+  // ---- distance readout ----
+  const distLbl = el('text',{x:objX, y:objTopY-16, class:'label', ['text-anchor']:'middle'});
+  distLbl.setAttribute('fill','var(--text-mute)');
+  distLbl.textContent = val < 34 ? 'దగ్గర (Near)' : (val > 66 ? 'దూరం (Far)' : 'మధ్యస్థం (Medium)');
+  svg.appendChild(distLbl);
+}
+
+function setMode(m){
+  mode = m;
+  tabs.forEach(t=>t.classList.toggle('active', t.dataset.mode===m));
+  const c = content[m];
+  document.getElementById('cardTitle').innerHTML = c.title;
+  document.getElementById('cardBody').innerHTML = c.body;
+  document.getElementById('cardBodyEn').textContent = c.bodyEn;
+  draw();
+}
+
+tabs.forEach(t=> t.addEventListener('click', ()=> setMode(t.dataset.mode)));
+slider.addEventListener('input', draw);
+
+setMode('normal');
+</script>
+</body>
+</html>
